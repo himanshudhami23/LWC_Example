@@ -1,0 +1,99 @@
+------------------------------------------------------------ HTML file -------------------------------------------
+<template>
+    <div class="Box"> <h1>API EXAMPLE</h1>
+    <div>Message : {message}</div>
+    <div>RecordId : {recordId} </div>
+</div>
+<h1>WIRE EXAMPLE</h1>
+    <template if:true={record.data}>
+        <div class="slds-grid">
+
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-formatted-text value={name} class="slds-text-heading_large">
+
+                </lightning-formatted-text>
+            </div>
+            <div class="slds-col slds-size_2-of-2">
+                <lightning-formatted-text value={phone} class="slds-text-heading_large">
+
+                </lightning-formatted-text>
+            </div>
+        </div>
+    </template>
+
+    <h1>ConnectedCallBack</h1>
+    <div class="slds-card">
+        <lightning-input label="Enter Name" name="name" onchange={getName}></lightning-input>
+    </div>
+    <div class="slds-card" if:true={ShowButton}>
+        <lightning-button name="Click On" label="Click On"></lightning-button>
+    </div>
+
+    <h2>RenderCallBack</h2>
+    <lightning-button label="Button 1" onclick={buttonClicked} data-id="button1"></lightning-button>
+    <lightning-button label="Button 2" onclick={buttonClicked} data-id="button2"></lightning-button>
+    <template if:true={showInfo}>
+        <lightning-input name="input1" class='input1'></lightning-input>
+    </template>
+</template>
+
+
+----------------------------------------- JS File --------------------------------------------------------------------------
+import { LightningElement,api, wire, track } from 'lwc';
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+// import templateOne from './templateOne.html';
+// import templateTwo from './templateTwo.html';
+
+// import NAME_FIELD from '@salesforce/schema/Account.Name';
+// import PHONE_FIELD from '@salesforce/schema/Account.Phone';
+const FIELDS =[
+    'Account.Name', 
+    'Account.Phone',
+]
+export default class BaiscLWCLearn extends LightningElement {
+    message = 'Api Example';
+    @api recordId;
+    @track ShowButton=false;
+    showInfo = false;
+    showInputFiledVal = false;
+    buttonLabel;
+    @wire(getRecord, {recordId: '$recordId',fields:FIELDS})
+    record; //it contain data and error
+
+    get name(){
+        return this.record.data.fields.Name.value;
+    }
+
+    get phone(){
+        return this.record.data.fields.Phone.value;
+    }
+
+    getName(event){
+        console.log('Name', event.target.value);
+        this.ShowButton=true;
+    }
+
+    connectedCallback(){
+        console.log('Connected Call Back is Called');
+    }
+    buttonClicked(event)
+    {
+        this.buttonLabel = event.currentTarget.dataset.id;
+        this.showInfo = true;
+        this.showInputFiledVal = true;
+        //this.template.querySelector('.input1').value = buttonLabel + ' is Clicked';
+    }
+
+    renderedCallback()
+    {
+        if(this.showInputFiledVal)
+        {
+            this.template.querySelector('.input1').value = this.buttonLabel + ' is Clicked';
+            this.showInputFiledVal = false;
+        }
+    }
+
+    disconnectedCallback(){
+        console.log('Disconnected Call Back is Called');
+    }
+}
